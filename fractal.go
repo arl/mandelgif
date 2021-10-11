@@ -21,20 +21,26 @@ type mandelbrot struct {
 	bounds rect
 }
 
+// compute checks if the complex number c is in the Mandelbrot Set.
+//
+// In theory we should apply an infinity of iterations. In pratice we know that
+// if z gets bigger than a predefined number called the 'escape radius', it
+// won't get back and just escape farther.
+//
+// details: runs fc(z) = z² + c a maximum number of 'maxiter' iterations, after
+// which it consider c has being in the set (escaped = false) or outside of the
+// set (escaped = true), and v quantifies how quickly the values reached the
+// escape point.
 func compute(c complex128, maxiter int) (v float64, escaped bool) {
 	const escapeRadius = 2
 	const sqEscapeRadius = escapeRadius * escapeRadius
 
-	// Check if c is in the mandelbrot set. In theory we should apply an
-	// infinity of iterations. In pratice we know that if z gets bigger
-	// than a predefined escape radius, it won't get back and just escape farther.
 	var (
 		n       int
 		z       = 0i
 		modulus float64
 	)
 	for {
-		// modulus = mod(z)
 		modulus = real(z)*real(z) + imag(z)*imag(z)
 		if modulus >= sqEscapeRadius {
 			v = float64(n+1) - math.Log(math.Log2(modulus))
