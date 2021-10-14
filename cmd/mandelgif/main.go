@@ -9,34 +9,68 @@ import (
 	"github.com/arl/mandelgif"
 )
 
-// pointA is one of an infinity of interesting points to zoom in.
-const pointA = 0.2721950 + 0.00540474i
-
-var defaultCfg = mandelgif.Mandelbrot{
-	Width: 256, Height: 256, // image dimension
-	NFrames: 50, // number of frame in the animated GIF
-	Bounds: mandelgif.Rect{ // 2D-space for the first image
-		X0: -2, Y0: -1,
-		X1: 1, Y1: 1,
-	},
-	ZoomLevel: 0.93,   // zoom to apply between a frame and the next one
-	ZoomPt:    pointA, // 2D coordinates of the complex number to zoom at
-	MaxIter:   1024,   // number of iteration to check if a pixel is in the mandelbrot set
-}
+const (
+	// pointA and pointB are 2 interesting points to zoom in.
+	pointA = 0.2721950 + 0.00540474i
+	pointB = -1.24254013716898265806 + 0.413238151606368892027i
+)
 
 func main() {
-	m := defaultCfg
-	zoomPt := complexValue(m.ZoomPt)
-	side := m.Width
+	log.SetFlags(0)
+	log.SetPrefix("[mandelgif] ")
 
-	flag.IntVar(&m.NFrames, "frames", m.NFrames, "number of frames in final animation")
-	flag.IntVar(&side, "side", side, "image width (square so width=height)")
-	flag.Float64Var(&m.ZoomLevel, "zoom", m.ZoomLevel, "scale to apply at each frame (zoom)")
-	flag.IntVar(&m.MaxIter, "iter", m.MaxIter, "max iterations to apply on 𝒛")
-	flag.Var(&zoomPt, "point", "point to zoom in")
+	m := mandelgif.Mandelbrot{
+		Bounds: mandelgif.Rect{ // 2D-space for the first image
+			X0: -2, Y0: -1,
+			X1: 1, Y1: 1,
+		},
+		ZoomLevel: 0.93,   // zoom to apply between a frame and the next one
+		ZoomPt:    pointA, // 2D coordinates of the complex number to zoom at
+		MaxIter:   1024,   // number of iteration to check if a pixel is in the mandelbrot set
+	}
+	zoomPt := complexFlag(m.ZoomPt)
+	height := 256
+	width := 256
+	nframes := 50
+	outname := "out.gif"
+
+	flag.IntVar(&nframes, "f", nframes, "")
+	flag.IntVar(&nframes, "frames", nframes, "")
+	flag.IntVar(&height, "h", height, "")
+	flag.IntVar(&height, "height", height, "")
+	flag.IntVar(&width, "w", width, "")
+	flag.IntVar(&width, "width", width, "")
+	flag.Float64Var(&m.ZoomLevel, "z", m.ZoomLevel, "")
+	flag.Float64Var(&m.ZoomLevel, "zoom", m.ZoomLevel, "")
+	flag.Var(&zoomPt, "p", "")
+	flag.Var(&zoomPt, "point", "")
+	flag.IntVar(&m.MaxIter, "i", m.MaxIter, "")
+	flag.IntVar(&m.MaxIter, "iter", m.MaxIter, "")
+	flag.StringVar(&outname, "o", outname, "")
+	flag.StringVar(&outname, "out", outname, "")
+
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, `
+  -help
+        prints this help message  
+  -frames | -f int
+        number of frames to render in the animation (default 50)
+  -height | -h int
+        image height (default 256)
+  -iter | -i int
+        max iterations to apply on 𝒛 (default 1024)
+  -out | -o string
+        output filename (default "out.gif")
+  -point | -p value
+        starting point to zoom in (default point A '0.272195+0.00540474i')
+  -width | -w int
+        image width (default 256)
+  -zoom | -z float
+        zoom level (i.e scale) to apply between two successive frames (default 0.93)`)
+	}
+
 	flag.Parse()
 
-	m.Width, m.Height = side, side
 	m.ZoomPt = complex128(zoomPt)
 
 	giff, err := os.Create("out.gif")
@@ -45,21 +79,6 @@ func main() {
 	}
 	defer giff.Close()
 
-	m.RenderAnimatedGif(giff)
+	m.RenderAnimatedGif(giff, nframes, width, height)
 	fmt.Println("success! out.gif")
-}
-
-type complexValue complex128
-
-func (c *complexValue) String() string {
-	return fmt.Sprint(complex128(*c))
-}
-
-func (c *complexValue) Set(s string) error {
-	var real, imag float64
-	if _, err := fmt.Sscanf(s, "%f+%fi", &real, &imag); err != nil {
-		return fmt.Errorf("failed parsing complex number: %v", err)
-	}
-	*c = complexValue(complex(real, imag))
-	return nil
 }

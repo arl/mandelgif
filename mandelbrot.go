@@ -12,13 +12,10 @@ import (
 )
 
 type Mandelbrot struct {
-	Width, Height int        // rendered image dimensions
-	MaxIter       int        // maximum number of iterations
-	NFrames       int        // how many frames to render
-	ZoomLevel     float64    // zoom applied at each frame
-	ZoomPt        complex128 // zoom point
-
-	Bounds Rect
+	MaxIter   int        // maximum number of iterations
+	ZoomLevel float64    // zoom applied at each frame
+	ZoomPt    complex128 // zoom point
+	Bounds    Rect
 }
 
 // compute checks if the complex number c is in the Mandelbrot Set.
@@ -129,25 +126,25 @@ func (m *Mandelbrot) renderFrame(cbounds Rect, img *image.Paletted) {
 	}
 }
 
-// renderAnimatedGifs writes the fractal zoom into w, as an animated Gif image.
-// The animation has m.nframes frames (images to be computed).
-func (m *Mandelbrot) RenderAnimatedGif(w io.Writer) {
-	images := make([]*image.Paletted, m.NFrames)
+// RenderAnimatedGif renders the zoom into the Mandelbrot set as an animated Gif
+// image with nframes frames of the specific width and height, into w.
+func (m *Mandelbrot) RenderAnimatedGif(w io.Writer, nframes, width, height int) {
+	images := make([]*image.Paletted, nframes)
 	delays := make([]int, 50)
 
-	log.Printf("Rendering %d frames", m.NFrames)
+	log.Printf("Rendering %d frames", nframes)
 
 	// Create the slices of bounds
-	bounds := make([]Rect, m.NFrames)
+	bounds := make([]Rect, nframes)
 	bounds[0] = m.Bounds
-	for i := 1; i < m.NFrames; i++ {
+	for i := 1; i < nframes; i++ {
 		bounds[i] = bounds[i-1]
 		bounds[i].zoom(real(m.ZoomPt), imag(m.ZoomPt), m.ZoomLevel)
 	}
 
 	// Render each frame.
-	for i := 0; i < m.NFrames; i++ {
-		img := image.NewPaletted(image.Rect(0, 0, m.Width, m.Height), gopalette.Plan9)
+	for i := 0; i < nframes; i++ {
+		img := image.NewPaletted(image.Rect(0, 0, width, height), gopalette.Plan9)
 		m.renderFrame(bounds[i], img)
 		images[i] = img
 	}
