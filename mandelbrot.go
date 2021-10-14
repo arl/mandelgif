@@ -1,11 +1,11 @@
 package mandelgif
 
 import (
+	"fmt"
 	"image"
 	gopalette "image/color/palette"
 	"image/gif"
 	"io"
-	"log"
 	"math"
 
 	"gonum.org/v1/plot/palette"
@@ -126,13 +126,14 @@ func (m *Mandelbrot) renderFrame(cbounds Rect, img *image.Paletted) {
 	}
 }
 
-// RenderAnimatedGif renders the zoom into the Mandelbrot set as an animated Gif
+// Render renders the zoom into the Mandelbrot set as an animated Gif
 // image with nframes frames of the specific width and height, into w.
-func (m *Mandelbrot) RenderAnimatedGif(w io.Writer, nframes, width, height int) {
-	images := make([]*image.Paletted, nframes)
-	delays := make([]int, 50)
+func (m *Mandelbrot) Render(w io.Writer, nframes, width, height int) error {
+	tlog := timedLogger()
+	tlog.logf("Initializing")
 
-	log.Printf("Rendering %d frames", nframes)
+	images := make([]*image.Paletted, nframes)
+	delays := make([]int, nframes)
 
 	// Create the slices of bounds
 	bounds := make([]Rect, nframes)
@@ -142,6 +143,8 @@ func (m *Mandelbrot) RenderAnimatedGif(w io.Writer, nframes, width, height int) 
 		bounds[i].zoom(real(m.ZoomPt), imag(m.ZoomPt), m.ZoomLevel)
 	}
 
+	tlog.logf("Rendering frames (%d)\n", nframes)
+
 	// Render each frame.
 	for i := 0; i < nframes; i++ {
 		img := image.NewPaletted(image.Rect(0, 0, width, height), gopalette.Plan9)
@@ -149,10 +152,15 @@ func (m *Mandelbrot) RenderAnimatedGif(w io.Writer, nframes, width, height int) 
 		images[i] = img
 	}
 
-	log.Println("Encoding to GIF")
+	tlog.logf("Encoding to GIF")
 
-	gif.EncodeAll(w, &gif.GIF{
+	if err := gif.EncodeAll(w, &gif.GIF{
 		Image: images,
 		Delay: delays,
-	})
+	}); err != nil {
+		return fmt.Errorf("error during gif encoding: %v", err)
+	}
+
+	tlog.logf("Done!")
+	return nil
 }

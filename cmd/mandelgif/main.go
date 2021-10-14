@@ -79,6 +79,7 @@ func main() {
 	}
 	defer giff.Close()
 
-	m.RenderAnimatedGif(giff, nframes, width, height)
-	fmt.Println("success! out.gif")
+	if err := m.Render(giff, nframes, width, height); err != nil {
+		log.Fatalf("error: %v", err)
+	}
 }
