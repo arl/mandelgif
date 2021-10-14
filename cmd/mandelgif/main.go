@@ -4,15 +4,39 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 
 	"github.com/arl/mandelgif"
 )
 
 const (
-	// pointA and pointB are 2 interesting points to zoom in.
+	// Predefined interesting points to zoom in.
 	pointA = 0.2721950 + 0.00540474i
 	pointB = -1.24254013716898265806 + 0.413238151606368892027i
+	pointC = -math.E/7 - -math.E/20i // the 'Seahorse' valley
+	pointD = -0.761574 - 0.0847596i  // Spirals
+	pointE = -1.62917 - 0.0203968i
+	pointF = 0.42884 - 0.231345i
+
+	usage = `mandelgif: renders a zoom of the Mandelbrot set into an animated Gif.
+
+Usage:
+	./mandelgif [options] [OUTFILE]
+	
+Options:
+	-help                prints this help message  
+	-f -frames           number of frames to render in the animation (default 50)
+	-i -iter             max iterations to apply on 𝒛 (default 1024)
+	-p -point            zoom point (default point A '0.272195+0.00540474i')
+	-z -zoom             zoom factor applied between successive frames (default 0.93)
+	-w -width            gif image width (default 256)
+	-h -height           gif image height (default 256)
+
+The -p --point option complex numbers in the form x+yi or a letter from A to B which
+represent predefined interesting zooming points. Examples: 0, 1, 1i, -1.629-0.0203968i, etc.
+
+OUTFILE defaults to out.gif`
 )
 
 func main() {
@@ -46,34 +70,23 @@ func main() {
 	flag.Var(&zoomPt, "point", "")
 	flag.IntVar(&m.MaxIter, "i", m.MaxIter, "")
 	flag.IntVar(&m.MaxIter, "iter", m.MaxIter, "")
-	flag.StringVar(&outname, "o", outname, "")
-	flag.StringVar(&outname, "out", outname, "")
 
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, `
-  -help
-        prints this help message  
-  -frames | -f int
-        number of frames to render in the animation (default 50)
-  -height | -h int
-        image height (default 256)
-  -iter | -i int
-        max iterations to apply on 𝒛 (default 1024)
-  -out | -o string
-        output filename (default "out.gif")
-  -point | -p value
-        starting point to zoom in (default point A '0.272195+0.00540474i')
-  -width | -w int
-        image width (default 256)
-  -zoom | -z float
-        zoom level (i.e scale) to apply between two successive frames (default 0.93)`)
+		fmt.Fprintln(os.Stderr, usage)
 	}
 
 	flag.Parse()
 
+	if flag.NArg() == 1 {
+		outname = flag.Arg(0)
+	} else if flag.NArg() != 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	m.ZoomPt = complex128(zoomPt)
 
-	giff, err := os.Create("out.gif")
+	giff, err := os.Create(outname)
 	if err != nil {
 		log.Fatalln("can't create output file", err)
 	}
