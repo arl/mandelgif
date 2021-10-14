@@ -1,4 +1,4 @@
-package main
+package mandelgif
 
 import (
 	"image"
@@ -11,14 +11,14 @@ import (
 	"gonum.org/v1/plot/palette"
 )
 
-type mandelbrot struct {
-	width, height int        // rendered image dimensions
-	maxiter       int        // maximum number of iterations
-	nframes       int        // how many frames to render
-	zoomLevel     float64    // zoom applied at each frame
-	zoomPt        complex128 // zoom point
+type Mandelbrot struct {
+	Width, Height int        // rendered image dimensions
+	MaxIter       int        // maximum number of iterations
+	NFrames       int        // how many frames to render
+	ZoomLevel     float64    // zoom applied at each frame
+	ZoomPt        complex128 // zoom point
 
-	bounds rect
+	Bounds Rect
 }
 
 // compute checks if the complex number c is in the Mandelbrot Set.
@@ -66,7 +66,7 @@ func compute(c complex128, maxiter int) (v float64, escaped bool) {
 //     relatively compute-intensive 'compute' method.
 //  2. Compute a color palette for the frame
 //  3. Color every pixel with the palette.
-func (m *mandelbrot) renderFrame(cbounds rect, img *image.Paletted) {
+func (m *Mandelbrot) renderFrame(cbounds Rect, img *image.Paletted) {
 	values := make([]float64, img.Bounds().Dx()*img.Bounds().Dy())
 	histogram := make(map[int]float64, img.Bounds().Dx()*img.Bounds().Dy())
 
@@ -77,11 +77,11 @@ func (m *mandelbrot) renderFrame(cbounds rect, img *image.Paletted) {
 		for y := 0; y < img.Bounds().Dy(); y++ {
 			// Create the complex number corresponding to pixel (x, y)
 			c := complex(
-				cbounds.x0+(float64(x)*cbounds.width()/float64(img.Bounds().Dx())),
-				cbounds.y0+(float64(y)*cbounds.height()/float64(img.Bounds().Dy())),
+				cbounds.X0+(float64(x)*cbounds.Width()/float64(img.Bounds().Dx())),
+				cbounds.Y0+(float64(y)*cbounds.Height()/float64(img.Bounds().Dy())),
 			)
 
-			value, escaped := compute(c, m.maxiter)
+			value, escaped := compute(c, m.MaxIter)
 
 			// Record the escape value for that pixel
 			values[x+y*img.Bounds().Dy()] = value
@@ -96,10 +96,10 @@ func (m *mandelbrot) renderFrame(cbounds rect, img *image.Paletted) {
 	for _, v := range histogram {
 		total += v
 	}
-	hues := make([]float64, m.maxiter+2)
+	hues := make([]float64, m.MaxIter+2)
 	var h float64
 	i := 0
-	for ; i < m.maxiter; i++ {
+	for ; i < m.MaxIter; i++ {
 		h += float64(histogram[i]) / float64(total)
 		hues[i] = h
 	}
@@ -114,7 +114,7 @@ func (m *mandelbrot) renderFrame(cbounds rect, img *image.Paletted) {
 		for y := 0; y < img.Bounds().Dy(); y++ {
 			mu := values[x+y*img.Bounds().Dy()]
 			value := float64(0)
-			if mu < float64(m.maxiter) {
+			if mu < float64(m.MaxIter) {
 				value = 1
 			}
 
@@ -131,23 +131,23 @@ func (m *mandelbrot) renderFrame(cbounds rect, img *image.Paletted) {
 
 // renderAnimatedGifs writes the fractal zoom into w, as an animated Gif image.
 // The animation has m.nframes frames (images to be computed).
-func (m *mandelbrot) renderAnimatedGif(w io.Writer) {
-	images := make([]*image.Paletted, m.nframes)
+func (m *Mandelbrot) RenderAnimatedGif(w io.Writer) {
+	images := make([]*image.Paletted, m.NFrames)
 	delays := make([]int, 50)
 
-	log.Printf("Rendering %d frames", m.nframes)
+	log.Printf("Rendering %d frames", m.NFrames)
 
 	// Create the slices of bounds
-	bounds := make([]rect, m.nframes)
-	bounds[0] = m.bounds
-	for i := 1; i < m.nframes; i++ {
+	bounds := make([]Rect, m.NFrames)
+	bounds[0] = m.Bounds
+	for i := 1; i < m.NFrames; i++ {
 		bounds[i] = bounds[i-1]
-		bounds[i].zoom(real(m.zoomPt), imag(m.zoomPt), m.zoomLevel)
+		bounds[i].zoom(real(m.ZoomPt), imag(m.ZoomPt), m.ZoomLevel)
 	}
 
 	// Render each frame.
-	for i := 0; i < m.nframes; i++ {
-		img := image.NewPaletted(image.Rect(0, 0, m.width, m.height), gopalette.Plan9)
+	for i := 0; i < m.NFrames; i++ {
+		img := image.NewPaletted(image.Rect(0, 0, m.Width, m.Height), gopalette.Plan9)
 		m.renderFrame(bounds[i], img)
 		images[i] = img
 	}

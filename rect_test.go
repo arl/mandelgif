@@ -1,14 +1,14 @@
-package main
+package mandelgif
 
 import "testing"
 
 func Test_rect_translate(t *testing.T) {
 	tests := []struct {
-		org    rect
+		org    Rect
 		tx, ty float64
-		want   rect
+		want   Rect
 	}{
-		{org: rect{0, 0, 0, 0}, tx: 1, ty: 1, want: rect{1, 1, 1, 1}},
+		{org: Rect{0, 0, 0, 0}, tx: 1, ty: 1, want: Rect{1, 1, 1, 1}},
 	}
 	for _, tt := range tests {
 		r := tt.org
@@ -21,12 +21,12 @@ func Test_rect_translate(t *testing.T) {
 
 func Test_rect_scale(t *testing.T) {
 	tests := []struct {
-		org    rect
+		org    Rect
 		factor float64
-		want   rect
+		want   Rect
 	}{
-		{org: rect{0, 0, 0, 0}, factor: 10, want: rect{0, 0, 0, 0}},
-		{org: rect{-1, -2, 0.5, 0.25}, factor: 10, want: rect{-10, -20, 5, 2.5}},
+		{org: Rect{0, 0, 0, 0}, factor: 10, want: Rect{0, 0, 0, 0}},
+		{org: Rect{-1, -2, 0.5, 0.25}, factor: 10, want: Rect{-10, -20, 5, 2.5}},
 	}
 	for _, tt := range tests {
 		r := tt.org
@@ -39,12 +39,12 @@ func Test_rect_scale(t *testing.T) {
 
 func Test_rect_center(t *testing.T) {
 	tests := []struct {
-		r            rect
+		r            Rect
 		wantx, wanty float64
 	}{
-		{r: rect{0, 0, 0, 0}, wantx: 0, wanty: 0},
-		{r: rect{0, 0, 1, 1}, wantx: 0.5, wanty: 0.5},
-		{r: rect{-1, -1, 1, 1}, wantx: 0, wanty: 0},
+		{r: Rect{0, 0, 0, 0}, wantx: 0, wanty: 0},
+		{r: Rect{0, 0, 1, 1}, wantx: 0.5, wanty: 0.5},
+		{r: Rect{-1, -1, 1, 1}, wantx: 0, wanty: 0},
 	}
 	for _, tt := range tests {
 		x, y := tt.r.center()
