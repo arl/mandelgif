@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math"
 	"os"
 
 	"github.com/arl/mandelgif"
@@ -14,8 +13,8 @@ const (
 	// Predefined interesting points to zoom in.
 	pointA = 0.2721950 + 0.00540474i
 	pointB = -1.24254013716898265806 + 0.413238151606368892027i
-	pointC = -math.E/7 - -math.E/20i // the 'Seahorse' valley
-	pointD = -0.761574 - 0.0847596i  // Spirals
+	pointC = -0.743904874255535 - 0.1317119067802009i // Sea Horse
+	pointD = -0.761574 - 0.0847596i                   // Spirals
 	pointE = -1.62917 - 0.0203968i
 	pointF = 0.42884 - 0.231345i
 
