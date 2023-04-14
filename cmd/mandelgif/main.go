@@ -22,20 +22,21 @@ const (
 
 Usage:
 	./mandelgif [options] [OUTFILE]
-	
-Options:
-	-help                prints this help message  
-	-f -frames           number of frames to render in the animation (default 50)
-	-i -iter             max iterations to apply on 𝒛 (default 1024)
-	-p -point            zoom point (default point A '0.272195+0.00540474i')
-	-z -zoom             zoom factor applied between successive frames (default 0.93)
-	-w -width            gif image width (default 256)
-	-h -height           gif image height (default 256)
 
-The -p --point option complex numbers in the form x+yi or a letter from A to B which
-represent predefined interesting zooming points. Examples: 0, 1, 1i, -1.629-0.0203968i, etc.
+General Options:
+	-help                Prints this help message
+	-f -frames NUM       Produce an animation with NUM frames. default 50
+	-z -zoom   FACTOR    Apply this zoom factor between successive frames. default 0.93)
+	-p -point  COMPLEX   Zoom on this point in the complex plane. default "A" (i.e. '0.272195+0.00540474i')
+	-w -width  PIXELS    Width of the output GIF image. default 256
+	-h -height PIXELS    Height of the output GIF image. default 256
+	-i -iter   ITER      Apply a maximum of ITER iterations on 𝒛. default 1024
 
-OUTFILE defaults to out.gif`
+Notes:
+	* OUTFILE defaults to out.gif
+	* The zoom point option "--point" accepts one of the following:
+		- a complex numbers in the form "x+yi"
+		- a letter from "A" to "F". Each letter represents a predefined interesting zoom point`
 )
 
 func main() {
